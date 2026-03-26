@@ -64,7 +64,21 @@ def parse(tokens: list[Token]) -> ast.Expression :
                     )            
         
         return left 
+    
 
+    def parse_expression_right() -> ast.BinaryOp:
+        left = parse_term() 
+        while peek().text in ['+' , '-']: 
+            operator_token = consume() 
+            operator = operator_token.text 
+            right = parse_expression_right() 
+            left = ast.BinaryOp(
+                    left, 
+                    operator, 
+                    right
+                )
+
+        return left 
     return parse_expression() 
 
 
