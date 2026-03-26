@@ -24,7 +24,8 @@ class Token:
 ident_re = re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*')
 int_literal_re = re.compile(r'[0-9]+')
 ws_re = re.compile(r'\s+')
-pattern = r'[a-zA-Z_][a-zA-Z0-9_]*|[0-9]+|\s+'
+#pattern = r'[a-zA-Z_][a-zA-Z0-9_]*|[0-9]+|\s+'
+pattern = r'//[^\n]*|#[^\n]*|==|!=|<=|>=|[+\-*/%=<>]|[(){},:;]|[a-zA-Z_][a-zA-Z0-9_]*|[0-9]+|\s+'
 def tokenize(source_code: str ) -> list[Token]: 
     
     tokens = re.findall(pattern, source_code)
@@ -53,7 +54,8 @@ def tokenize(source_code: str ) -> list[Token]:
 
         new_token = Token(text=token, type=token_type, loc=SourceLocation(line=line, column=col))
         new_tokens.append(new_token) 
-    print("new_tokens : " , new_tokens) 
+    print("new_tokens : " , new_tokens)
+    print("tokens: " , tokens) 
     return new_tokens 
 
 
