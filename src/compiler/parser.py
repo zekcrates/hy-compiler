@@ -28,22 +28,45 @@ def parse(tokens: list[Token]) -> ast.Expression :
     
     def parse_int_literal() -> ast.Literal:
         if peek().type != "int_literal":
-            raise Exception(f'{peek().location}: expected an integer literal')
+            raise Exception(f'{peek().loc}: expected an integer literal')
         token = consume() 
         return ast.Literal(int(token.text)) 
+    
+
+    def parse_identifier() -> ast.Identifier:
+        if peek().type != "identifier" :
+            
+            raise Exception(f'{peek().loc}: expected an identifier')
+        token = consume() 
+        return ast.Identifier(token.text))
+    
+    def parse_term() -> ast.Expression:
+        if peek().type == "int_literal" :
+            return parse_int_literal() 
+        elif peek().type == "identifier" :
+            return parse_identifier() 
+        else:
+            raise Exception(f'{peek().loc}: expected an integer literal or an identifier')
 
     def parse_expression() -> ast.BinaryOp:
-        left = parse_int_literal()
-        operator_token = consume(['+', '-']) 
-        right = parse_int_literal() 
-        return ast.BinaryOp(left,operator_token.text , right )
+        left = parse_term() 
+
+        while peek().text in ['+', '-'] :
+            operator_token = consume() 
+            operator = operator_token.text 
+
+            right = parse_term() 
+
+            left = ast.BinaryOp(
+                    left, 
+                    operator, 
+                    right
+                    )            
+        
+        return left 
 
     return parse_expression() 
 
 
 
-a = Token(text="1" , type="int_literal")
-b  = Token(text="2", type="int_literal") 
-tokens =[a,b] 
-print(parse(tokens) ) 
 
