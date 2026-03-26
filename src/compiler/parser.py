@@ -93,7 +93,13 @@ def parse(tokens: list[Token]) -> ast.Expression :
                     right
                 )
 
-        return left 
+        return left
+
+    def parse_parenthesized()-> ast.Expression:
+        consume("(") 
+        expr = parse_expression() 
+        consume(")")
+        return expr
     return parse_expression() 
 
 
