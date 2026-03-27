@@ -47,3 +47,9 @@ def test_parser_func() -> None:
     parse_output = parse(tokens)
     print("\n\nparse_output : \n" , parse_output) 
     assert parse_output ==ast.Function(name='add', args=[ast.Identifier(name='a'), ast.Identifier(name='b')])
+
+
+def test_parser_t4() -> None:
+    tokens = tokenize("x = if a == 5 then add(x, 1 + 2) else y * -3")
+    parse_output = parse(tokens)
+    assert parse_output == ast.Assignment(target=ast.Identifier(name='x'), value=ast.IfExpr(condition=ast.BinaryOp(left=ast.Identifier(name='a'), op='==', right=ast.Literal(value=5)), then_branch=ast.Function(name='add', args=[ast.Identifier(name='x'), ast.BinaryOp(left=ast.Literal(value=1), op='+', right=ast.Literal(value=2))]), else_branch=ast.BinaryOp(left=ast.Identifier(name='y'), op='*', right=ast.UnaryOp(op='-', expr=ast.Literal(value=3)))))

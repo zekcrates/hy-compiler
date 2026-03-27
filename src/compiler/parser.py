@@ -179,15 +179,15 @@ def parse(tokens: list[Token]) -> ast.Expression :
 
     def parse_if() -> ast.Expression:
         if_token = consume("if") 
-        condition= parse_expression() 
+        condition= parse_or() 
 
         then_token = consume("then") 
-        then_condition = parse_expression() 
+        then_condition = parse_or()
         
         el_branch = None 
         if peek().text == "else":
             consume("else") 
-            el_branch = parse_expression()
+            el_branch = parse_or()
 
         return ast.IfExpr(
                     condition=condition, 
