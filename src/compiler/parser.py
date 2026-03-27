@@ -1,5 +1,5 @@
 from compiler.tokenizer import Token 
-from compiler.ast import ast 
+from compiler.ast as ast 
 
 
 def parse(tokens: list[Token]) -> ast.Expression :
@@ -38,7 +38,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
             
             raise Exception(f'{peek().loc}: expected an identifier')
         token = consume() 
-        return ast.Identifier(token.text))
+        return ast.Identifier(token.text)
     
     def parse_factor() -> ast.Expression:
         if peek().type == "int_literal" :
