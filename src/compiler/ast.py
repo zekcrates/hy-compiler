@@ -29,3 +29,9 @@ class IfExpr(Expression):
     then_branch: Expression     
     else_branch : Expression | None = None 
 
+
+@dataclass 
+class Function(Expression):
+    name: str 
+    args: list[Expression] | None = None 
+

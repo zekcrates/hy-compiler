@@ -40,3 +40,10 @@ def test_parser_ifthen2() -> None:
 
     assert parse_output == ast.IfExpr(condition=ast.Identifier(name='x'), then_branch=ast.IfExpr(condition=ast.BinaryOp(left=ast.Identifier(name='y'), op='+', right=ast.Literal(value=2)), then_branch=ast.Identifier(name='z'), else_branch=None), else_branch=None)
 
+
+
+def test_parser_func() -> None:
+    tokens = tokenize("add(a,b)")
+    parse_output = parse(tokens)
+    print("\n\nparse_output : \n" , parse_output) 
+    assert parse_output ==ast.Function(name='add', args=[ast.Identifier(name='a'), ast.Identifier(name='b')])

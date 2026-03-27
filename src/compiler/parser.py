@@ -35,11 +35,15 @@ def parse(tokens: list[Token]) -> ast.Expression :
         return ast.Literal(int(token.text)) 
     
 
-    def parse_identifier() -> ast.Identifier:
+    def parse_identifier() -> ast.Expression:
         if peek().type != "identifier" :
             
             raise Exception(f'{peek().loc}: expected an identifier')
-        token = consume() 
+        token = consume()
+
+        # checking for function 
+        if peek().text == "(":
+            return parse_function(token) 
         return ast.Identifier(token.text)
     
     def parse_factor() -> ast.Expression:
@@ -106,6 +110,22 @@ def parse(tokens: list[Token]) -> ast.Expression :
         expr = parse_expression() 
         consume(")")
         return expr
+
+    def parse_function(fname_token: Token) -> ast.Expression:
+        #(a,b) 
+        name = fname_token.text
+        consume("(") 
+        args: list[ast.Expression] =[]
+        
+        if peek().text != ")":
+            args.append(parse_expression()) 
+            while peek().text == ',':
+                consume(",") 
+                args.append(parse_expression())
+
+            consume(")")
+
+        return ast.Function(name=name , args=args if len(args) > 0 else None) 
 
     def parse_if() -> ast.Expression:
         if_token = consume("if") 
