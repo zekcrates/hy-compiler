@@ -35,3 +35,15 @@ class Function(Expression):
     name: str 
     args: list[Expression] | None = None 
 
+
+@dataclass
+class UnaryOp(Expression):
+    op: str 
+    expr: Expression 
+
+
+@dataclass 
+class Assignment(Expression):
+    target: Expression 
+    value: Expression 
+

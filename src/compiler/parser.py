@@ -2,6 +2,8 @@ from compiler.tokenizer import Token
 import compiler.ast as ast 
 
 
+operators = ['+', '-', '%', '==','!=', '<', '<=', '>', '>=', 'and' , 'or' ,'-', 'not'  ]
+
 def parse(tokens: list[Token]) -> ast.Expression :
     pos = 0 
 
@@ -27,7 +29,48 @@ def parse(tokens: list[Token]) -> ast.Expression :
         pos +=1 
         return token 
 
-    
+    def parse_assignment() ->ast.Expression:
+        left = parse_or() 
+        if peek().text == "=":
+            consume("=") 
+            value = parse_assignment() 
+            left = ast.Assignment(left, value) 
+        return left
+    def parse_or() ->ast.Expression:
+        left = parse_and() 
+        while peek().text == "or":
+            operator_token = consume() 
+            operator = operator_token.text 
+            right =parse_and() 
+            left = ast.BinaryOp(left, operator, right)
+        return left
+    def parse_and() -> ast.Expression:
+        left = parse_equality() 
+        while peek().text == 'and':
+            operator_token = consume() 
+            operator = operator_token.text 
+            right = parse_equality() 
+            left = ast.BinaryOp(left, operator, right) 
+        return left 
+    def parse_equality() -> ast.Expression:
+        left = parse_comparison() 
+        while peek().text in ['==', '!=']: 
+            operator_token = consume() 
+            operator = operator_token.text 
+            right = parse_equality() 
+            left = ast.BinaryOp(left,operator, right)
+
+        return left 
+    def parse_comparison() -> ast.Expression:
+        left = parse_expression()
+        while peek().text in ["<" ,"<=" , ">" , ">="]:
+            operator_token = consume() 
+            operator = operator_token.text
+            right = parse_expression() 
+            left = ast.BinaryOp(left, operator, right)
+        return left 
+
+
     def parse_int_literal() -> ast.Literal:
         if peek().type != "int_literal":
             raise Exception(f'{peek().loc}: expected an integer literal')
@@ -77,12 +120,12 @@ def parse(tokens: list[Token]) -> ast.Expression :
     
 
     def parse_term() -> ast.Expression:
-        left = parse_factor() 
+        left = parse_unary() 
 
-        while peek().text in ['*','/']:
+        while peek().text in ['*','/', '%']:
             operator_token = consume() 
             operator = operator_token.text 
-            right = parse_factor()
+            right = parse_unary()
             left = ast.BinaryOp(
                         left,
                         operator,
@@ -90,7 +133,14 @@ def parse(tokens: list[Token]) -> ast.Expression :
                         )
 
         return left 
-
+    
+    def parse_unary() -> ast.Expression:
+        if peek().text in ['-', 'not']:
+            operator_token = consume() 
+            operator = operator_token.text 
+            expr = parse_unary() 
+            return ast.UnaryOp(operator, expr)
+        return parse_factor()
     def parse_expression_right() -> ast.Expression:
         left = parse_term() 
         while peek().text in ['+' , '-']: 
@@ -144,7 +194,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
                     then_branch = then_condition, 
                     else_branch = el_branch
                 )
-    return parse_expression() 
+    return parse_assignment() 
 
 
 
