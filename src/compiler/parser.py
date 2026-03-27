@@ -43,7 +43,11 @@ def parse(tokens: list[Token]) -> ast.Expression :
         return ast.Identifier(token.text)
     
     def parse_factor() -> ast.Expression:
-        if peek().type == "int_literal" :
+        if peek().text == '(':
+            return parse_parenthesized()
+        elif peek().text == "if":
+            return parse_if()
+        elif peek().type == "int_literal" :
             return parse_int_literal() 
         elif peek().type == "identifier" :
             return parse_identifier() 
@@ -102,6 +106,19 @@ def parse(tokens: list[Token]) -> ast.Expression :
         expr = parse_expression() 
         consume(")")
         return expr
+
+    def parse_if() -> ast.Expression:
+        if_token = consume("if") 
+        while peek().text != "then" :
+            condition= parse_expression() 
+
+        then_token = consume("then") 
+        then_condition = parse_expression() 
+
+        return ast.IfExpr(
+                    condition=condition, 
+                    then_branch = then_condition
+                )
     return parse_expression() 
 
 

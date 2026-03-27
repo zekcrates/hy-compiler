@@ -25,3 +25,10 @@ def test_parser_test3() -> None:
     except Exception:
         assert True 
 
+
+def test_parser_ifthen() ->None :
+    tokens = tokenize("if a + b then b+c ") 
+    
+    parse_output = parse(tokens) 
+    assert parse_output == ast.IfExpr(condition=ast.BinaryOp(left=ast.Identifier(name='a'), op='+', right=ast.Identifier(name='b')), then_branch=ast.BinaryOp(left=ast.Identifier(name='b'), op='+', right=ast.Identifier(name='c')), else_branch=None)
+

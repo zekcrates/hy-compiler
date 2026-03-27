@@ -23,3 +23,9 @@ class BinaryOp(Expression):
     right: Expression 
 
 
+@dataclass
+class IfExpr(Expression):
+    condition : Expression 
+    then_branch: Expression     
+    else_branch : Expression | None = None 
+
