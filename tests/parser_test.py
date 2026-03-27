@@ -32,3 +32,11 @@ def test_parser_ifthen() ->None :
     parse_output = parse(tokens) 
     assert parse_output == ast.IfExpr(condition=ast.BinaryOp(left=ast.Identifier(name='a'), op='+', right=ast.Identifier(name='b')), then_branch=ast.BinaryOp(left=ast.Identifier(name='b'), op='+', right=ast.Identifier(name='c')), else_branch=None)
 
+
+
+def test_parser_ifthen2() -> None:
+    tokens =tokenize("if x then if y + 2 then z")
+    parse_output = parse(tokens) 
+
+    assert parse_output == ast.IfExpr(condition=ast.Identifier(name='x'), then_branch=ast.IfExpr(condition=ast.BinaryOp(left=ast.Identifier(name='y'), op='+', right=ast.Literal(value=2)), then_branch=ast.Identifier(name='z'), else_branch=None), else_branch=None)
+

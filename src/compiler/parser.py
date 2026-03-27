@@ -109,8 +109,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
 
     def parse_if() -> ast.Expression:
         if_token = consume("if") 
-        while peek().text != "then" :
-            condition= parse_expression() 
+        condition= parse_expression() 
 
         then_token = consume("then") 
         then_condition = parse_expression() 
