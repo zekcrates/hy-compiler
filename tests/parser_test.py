@@ -53,3 +53,83 @@ def test_parser_t4() -> None:
     tokens = tokenize("x = if a == 5 then add(x, 1 + 2) else y * -3")
     parse_output = parse(tokens)
     assert parse_output == ast.Assignment(target=ast.Identifier(name='x'), value=ast.IfExpr(condition=ast.BinaryOp(left=ast.Identifier(name='a'), op='==', right=ast.Literal(value=5)), then_branch=ast.Function(name='add', args=[ast.Identifier(name='x'), ast.BinaryOp(left=ast.Literal(value=1), op='+', right=ast.Literal(value=2))]), else_branch=ast.BinaryOp(left=ast.Identifier(name='y'), op='*', right=ast.UnaryOp(op='-', expr=ast.Literal(value=3)))))
+
+
+
+def test_parser_unary_not() -> None:
+    tokens = tokenize("not x")
+    parse_output = parse(tokens)
+    assert parse_output == ast.UnaryOp(op='not', expr=ast.Identifier(name='x'))
+
+def test_parser_chained_comparison() -> None:
+    tokens = tokenize("x == y")
+    parse_output = parse(tokens)
+    assert parse_output == ast.BinaryOp(left=ast.Identifier(name='x'), op='==', right=ast.Identifier(name='y'))
+
+def test_parser_and_or() -> None:
+    tokens = tokenize("x and y or z")
+    parse_output = parse(tokens)
+    # or is lower precedence so it's the root
+    assert parse_output == ast.BinaryOp(
+        left=ast.BinaryOp(left=ast.Identifier(name='x'), op='and', right=ast.Identifier(name='y')),
+        op='or',
+        right=ast.Identifier(name='z')
+    )
+
+def parser_parenthesized() -> None:
+    tokens = tokenize("(1 + 2) * 3")
+    parse_output = parse(tokens)
+    assert parse_output == ast.BinaryOp(
+        left=ast.BinaryOp(left=ast.Literal(value=1), op='+', right=ast.Literal(value=2)),
+        op='*',
+        right=ast.Literal(value=3)
+    )
+
+def test_parser_chained_assignment() -> None:
+    tokens = tokenize("x = y = 5")
+    parse_output = parse(tokens)
+    # right associative so y=5 happens first
+    assert parse_output == ast.Assignment(
+        target=ast.Identifier(name='x'),
+        value=ast.Assignment(
+            target=ast.Identifier(name='y'),
+            value=ast.Literal(value=5)
+        )
+    )
+
+def test_parser_nested_function() -> None:
+    tokens = tokenize("add(f(x), y)")
+    parse_output = parse(tokens)
+    assert parse_output == ast.Function(
+        name='add',
+        args=[
+            ast.Function(name='f', args=[ast.Identifier(name='x')]),
+            ast.Identifier(name='y')
+        ]
+    )
+
+def test_parser_if_else_complex() -> None:
+    tokens = tokenize("if x and y then 1 else 0")
+    parse_output = parse(tokens)
+    assert parse_output == ast.IfExpr(
+        condition=ast.BinaryOp(left=ast.Identifier(name='x'), op='and', right=ast.Identifier(name='y')),
+        then_branch=ast.Literal(value=1),
+        else_branch=ast.Literal(value=0)
+    )
+
+# error cases
+def test_parser_empty_parens_error() -> None:
+    tokens = tokenize("()")
+    try:
+        parse(tokens)
+        assert False
+    except Exception:
+        assert True
+
+def test_parser_missing_then_error() -> None:
+    tokens = tokenize("if x 5")
+    try:
+        parse(tokens)
+        assert False
+    except Exception:
+        assert True
