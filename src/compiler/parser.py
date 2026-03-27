@@ -113,10 +113,16 @@ def parse(tokens: list[Token]) -> ast.Expression :
 
         then_token = consume("then") 
         then_condition = parse_expression() 
+        
+        el_branch = None 
+        if peek().text == "else":
+            consume("else") 
+            el_branch = parse_expression()
 
         return ast.IfExpr(
                     condition=condition, 
-                    then_branch = then_condition
+                    then_branch = then_condition, 
+                    else_branch = el_branch
                 )
     return parse_expression() 
 
