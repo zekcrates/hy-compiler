@@ -1,19 +1,21 @@
 from compiler.tokenizer import Token 
-from compiler.ast as ast 
+import compiler.ast as ast 
 
 
 def parse(tokens: list[Token]) -> ast.Expression :
     pos = 0 
 
     def peek()-> Token:
-        # return token at pos 
+        # return token at pos
+        if len(tokens) == 0 :
+            raise SyntaxError("Unexpected end of input (no tokens to peek)")
         if pos < len(tokens) :
             return tokens[pos] 
         else:
             return Token(text="", type="end" , loc=tokens[-1].loc) 
     
 
-    def consume(expected: str | list[str] | None) -> Token: 
+    def consume(expected: str | list[str] | None=None) -> Token: 
         nonlocal pos 
         token = peek() 
         if isinstance(expected,str) and token.text != expected: 
@@ -48,7 +50,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
         else:
             raise Exception(f'{peek().loc}: expected an integer literal or an identifier')
 
-    def parse_expression() -> ast.BinaryOp:
+    def parse_expression() -> ast.Expression:
         left = parse_term() 
 
         while peek().text in ['+', '-'] :
@@ -81,7 +83,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
 
         return left 
 
-    def parse_expression_right() -> ast.BinaryOp:
+    def parse_expression_right() -> ast.Expression:
         left = parse_term() 
         while peek().text in ['+' , '-']: 
             operator_token = consume() 

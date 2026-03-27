@@ -1,0 +1,27 @@
+import compiler.ast as ast 
+from compiler.tokenizer import Token, tokenize 
+from compiler.parser import parse
+
+def test_parser_test1()-> None :
+    tokens = tokenize("1 + 2")
+    parse_output =parse(tokens) 
+
+    assert parse_output == ast.BinaryOp(left=ast.Literal(value=1) , op='+', right=ast.Literal(value=2))
+
+
+def test_parser_test2() -> None:
+    tokens = tokenize("1+2 * 3")
+    parse_output = parse(tokens) 
+
+    assert parse_output ==ast.BinaryOp(left=ast.Literal(value=1), op='+', right=ast.BinaryOp(left=ast.Literal(value=2), op='*', right=ast.Literal(value=3)))
+
+
+#make sure (a+b c) give error 
+def test_parser_test3() -> None:
+    tokens = tokenize("a + b c ") 
+    try: 
+        parse_output = parse(tokens) 
+        assert False 
+    except Exception:
+        assert True 
+
