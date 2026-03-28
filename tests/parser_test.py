@@ -158,3 +158,10 @@ def test_block_missing_semicolon_error() -> None:
         assert False
     except Exception:
         assert True
+
+
+def test_var_1() -> None:
+    tokens = tokenize("var x = 3 ") 
+    parse_output = parse(tokens) 
+    assert parse_output ==ast.VarDecl(name='x', var_type=None, value=ast.Literal(value=3))
+

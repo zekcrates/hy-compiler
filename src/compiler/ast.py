@@ -51,3 +51,10 @@ class Assignment(Expression):
 class Block(Expression):
     statements: list[Expression] 
 
+
+@dataclass
+class VarDecl(Expression):
+    name: str 
+    var_type: str | None = None 
+    value : Expression | None = None 
+
