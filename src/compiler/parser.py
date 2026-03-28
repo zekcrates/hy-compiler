@@ -92,6 +92,8 @@ def parse(tokens: list[Token]) -> ast.Expression :
     def parse_factor() -> ast.Expression:
         if peek().text == '(':
             return parse_parenthesized()
+        elif peek().text== "{":
+            return parse_block() 
         elif peek().text == "if":
             return parse_if()
         elif peek().type == "int_literal" :
@@ -176,6 +178,20 @@ def parse(tokens: list[Token]) -> ast.Expression :
             consume(")")
 
         return ast.Function(name=name , args=args if len(args) > 0 else None) 
+    
+    def parse_block() -> ast.Expression:
+        consume("{") 
+        statements: list[ast.Expression] = []
+
+        while peek().text != "}":
+            statements.append(parse_assignment()) 
+            if peek().text == ";":
+                consume(";")
+                if peek().next == "}":
+                    statements.append(ast.Literal(None)) 
+                    break 
+        consume("}") 
+        return ast.Block(statements=statements) 
 
     def parse_if() -> ast.Expression:
         if_token = consume("if") 

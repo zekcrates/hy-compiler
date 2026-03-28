@@ -7,7 +7,7 @@ class Expression:
 
 @dataclass
 class Literal(Expression):
-    value: int| bool 
+    value: int| bool | None 
     # a = Literal(1) or Literal(True) 
 
 
@@ -46,4 +46,8 @@ class UnaryOp(Expression):
 class Assignment(Expression):
     target: Expression 
     value: Expression 
+
+@dataclass
+class Block(Expression):
+    statements: list[Expression] 
 
