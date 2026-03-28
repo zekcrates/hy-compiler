@@ -31,18 +31,18 @@ def parse(tokens: list[Token]) -> ast.Expression :
 
     def parse_assignment() ->ast.Expression:
         if peek().text == "var" : 
-            consume("var") 
+            var_token = consume("var") 
             name = consume().text 
             consume("=") 
             value = parse_assignment()
 
-            return ast.VarDecl(name=name, var_type=None, value=value)
+            return ast.VarDecl(name=name, var_type=None, value=value, location=var_token.loc)
 
         left = parse_or() 
         if peek().text == "=":
-            consume("=") 
+            eq_token = consume("=") 
             value = parse_assignment() 
-            left = ast.Assignment(left, value) 
+            left = ast.Assignment(left, value, location=eq_token.loc) 
         return left
     def parse_or() ->ast.Expression:
         left = parse_and() 
@@ -50,7 +50,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
             operator_token = consume() 
             operator = operator_token.text 
             right =parse_and() 
-            left = ast.BinaryOp(left, operator, right)
+            left = ast.BinaryOp(left, operator, right, location=operator_token.loc)
         return left
     def parse_and() -> ast.Expression:
         left = parse_equality() 
@@ -58,7 +58,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
             operator_token = consume() 
             operator = operator_token.text 
             right = parse_equality() 
-            left = ast.BinaryOp(left, operator, right) 
+            left = ast.BinaryOp(left, operator, right, location=operator_token.loc) 
         return left 
     def parse_equality() -> ast.Expression:
         left = parse_comparison() 
@@ -66,7 +66,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
             operator_token = consume() 
             operator = operator_token.text 
             right = parse_equality() 
-            left = ast.BinaryOp(left,operator, right)
+            left = ast.BinaryOp(left,operator, right, location=operator_token.loc)
 
         return left 
     def parse_comparison() -> ast.Expression:
@@ -75,7 +75,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
             operator_token = consume() 
             operator = operator_token.text
             right = parse_expression() 
-            left = ast.BinaryOp(left, operator, right)
+            left = ast.BinaryOp(left, operator, right,location=operator_token.loc)
         return left 
 
 
@@ -83,7 +83,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
         if peek().type != "int_literal":
             raise Exception(f'{peek().loc}: expected an integer literal')
         token = consume() 
-        return ast.Literal(int(token.text)) 
+        return ast.Literal(int(token.text) , location=token.loc) 
     
 
     def parse_identifier() -> ast.Expression:
@@ -95,7 +95,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
         # checking for function 
         if peek().text == "(":
             return parse_function(token) 
-        return ast.Identifier(token.text)
+        return ast.Identifier(token.text, location=token.loc)
     
     def parse_factor() -> ast.Expression:
         if peek().text == '(':
@@ -123,7 +123,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
             left = ast.BinaryOp(
                     left, 
                     operator, 
-                    right
+                    right, location=operator_token.loc
                     )            
         
         return left 
@@ -139,7 +139,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
             left = ast.BinaryOp(
                         left,
                         operator,
-                        right
+                        right,location= operator_token.loc
                         )
 
         return left 
@@ -149,7 +149,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
             operator_token = consume() 
             operator = operator_token.text 
             expr = parse_unary() 
-            return ast.UnaryOp(operator, expr)
+            return ast.UnaryOp(operator, expr,location=operator_token.loc)
         return parse_factor()
     def parse_expression_right() -> ast.Expression:
         left = parse_term() 
@@ -160,7 +160,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
             left = ast.BinaryOp(
                     left, 
                     operator, 
-                    right
+                    right, operator_token.loc
                 )
 
         return left
@@ -185,10 +185,11 @@ def parse(tokens: list[Token]) -> ast.Expression :
 
             consume(")")
 
-        return ast.Function(name=name , args=args if len(args) > 0 else None) 
+        return ast.Function(name=name , args=args if len(args) > 0 else None
+                            ,location=fname_token.loc) 
     
     def parse_block() -> ast.Expression:
-        consume("{") 
+        open_brace_token = consume("{") 
         statements: list[ast.Expression] = []
 
         while peek().text != "}":
@@ -199,7 +200,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
                     statements.append(ast.Literal(None)) 
                     break 
         consume("}") 
-        return ast.Block(statements=statements) 
+        return ast.Block(statements=statements, location=open_brace_token.loc) 
 
     def parse_if() -> ast.Expression:
         if_token = consume("if") 
@@ -216,8 +217,10 @@ def parse(tokens: list[Token]) -> ast.Expression :
         return ast.IfExpr(
                     condition=condition, 
                     then_branch = then_condition, 
-                    else_branch = el_branch
+                    else_branch = el_branch, 
+                    location=if_token.loc
                 )
+
     return parse_assignment() 
 
 
