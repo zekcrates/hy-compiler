@@ -133,3 +133,28 @@ def test_parser_missing_then_error() -> None:
         assert False
     except Exception:
         assert True
+
+def test_block_basic() -> None:
+    tokens = tokenize("{ a; b }")
+    parse_output = parse(tokens)
+    assert parse_output == ast.Block(statements=[
+        ast.Identifier(name='a'),
+        ast.Identifier(name='b')
+    ])
+
+def test_block_trailing_semicolon() -> None:
+    tokens = tokenize("{ a; b; }")
+    parse_output = parse(tokens)
+    assert parse_output == ast.Block(statements=[
+        ast.Identifier(name='a'),
+        ast.Identifier(name='b'),
+        ast.Literal(value=None)
+    ])
+
+def test_block_missing_semicolon_error() -> None:
+    tokens = tokenize("{ a b }")
+    try:
+        parse(tokens)
+        assert False
+    except Exception:
+        assert True

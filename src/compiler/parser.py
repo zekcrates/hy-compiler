@@ -187,7 +187,7 @@ def parse(tokens: list[Token]) -> ast.Expression :
             statements.append(parse_assignment()) 
             if peek().text == ";":
                 consume(";")
-                if peek().next == "}":
+                if peek().text == "}":
                     statements.append(ast.Literal(None)) 
                     break 
         consume("}") 
