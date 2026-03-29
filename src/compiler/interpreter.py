@@ -3,15 +3,19 @@ from compiler import ast
 
 Value = int | bool | None 
 
+class SymTab:
+    def __init__(self, parent=None):
+        self.locals: dict[str, Value] = {}  
+        self.parent: SymTab | None = parent
 
-def interpret(node: ast.Expression) -> Value:
+def interpret(node: ast.Expression, symtab=None) -> Value:
     match node: 
         case ast.Literal() :
             return  node.value 
         
         case ast.BinaryOp():
-            a:Any =  interpret(node.left) 
-            b: Any = interpret(node.right) 
+            a:Any =  interpret(node.left, symtab) 
+            b: Any = interpret(node.right), symtab )  
             if node.op == '+':
                 return a + b 
             elif node.op == '<':
@@ -24,12 +28,13 @@ def interpret(node: ast.Expression) -> Value:
 
         case ast.IfThen():
             if (interpret(node.condition)):
-                return interpret(node.then_branch) 
+                return interpret(node.then_branch, symtab) 
             else:
-                return interpret(node.else_branch)
+                return interpret(node.else_branch, symtab)
         
         case ast.UnaryOp():
-            c: Any = interpret(node.expr) 
+
+            c: Any = interpret(node.expr, symtab) 
             if node.op == '-':
                 return -c
             elif node.op == 'not':
@@ -42,16 +47,27 @@ def interpret(node: ast.Expression) -> Value:
            if node.args is not None:
 
             for expr in node.args:
-                val = interpret(expr) 
+                val = interpret(expr, symtab) 
                 arg_vals.append(val) 
 
             if node.name == "print":
                 print(*arg_vals)
-                raise Exception("n")
+                return None 
             else:
                 raise Exception("Unknown error at Function" ) 
 
+        case ast.VarDecl():
+            name = node.name 
+            value = interpret(node.value, symtab) 
+            SymTab.locals[name] = value 
+            return value 
 
+        case ast.Block():
+            result = None 
+            block_table = SymTab(parent=symtab) 
+            for st in node.statements:
+                result = interpret(st, block_table) 
+            return result 
         case _:
             raise Exception(f"Unsupported node type: {type(node).__name__}")
 
