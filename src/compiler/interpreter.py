@@ -67,8 +67,20 @@ def interpret(node: ast.Expression, symtab=None) -> Value:
             block_table = SymTab(parent=symtab) 
             for st in node.statements:
                 result = interpret(st, block_table) 
-            return result 
+            return result
+        case ast.Identifier():
+            return lookup(node.name, symtab) 
+
         case _:
             raise Exception(f"Unsupported node type: {type(node).__name__}")
 
     return None
+
+def lookup(name: str, symtab: SymTab) -> Value:
+    
+    if name in symtab.locals:
+        return symtab.locals[name] 
+    elif symtab.parent is not None:
+        return lookup(name, symtab.parent)
+    else:
+        raise Exception(f"Undefined variable {name} " ) 
