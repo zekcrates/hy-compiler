@@ -1,12 +1,22 @@
-from typing import Any 
+from typing import Any,Callable 
 from compiler import ast 
 
-Value = int | bool | None 
+Value = int | bool | None | Callable 
+
 
 class SymTab:
     def __init__(self, parent=None):
         self.locals: dict[str, Value] = {}  
         self.parent: SymTab | None = parent
+
+def new_table()-> SymTab:
+    top = SymTab()
+    top.locals("+") = lambda a,b : a+b 
+    top.locals("-") = lambda a,b: a-b 
+    top.locals("<") = lambda a, b: a< b 
+    top.locals("print_int") = lambda a: print(a) 
+    
+    return top 
 
 def interpret(node: ast.Expression, symtab=None) -> Value:
     match node: 
@@ -16,15 +26,8 @@ def interpret(node: ast.Expression, symtab=None) -> Value:
         case ast.BinaryOp():
             a:Any =  interpret(node.left, symtab) 
             b: Any = interpret(node.right), symtab )  
-            if node.op == '+':
-                return a + b 
-            elif node.op == '<':
-                return a< b 
-            elif node.op == '-':
-                return a-b 
-            
-            else :
-                raise Exception("Unknown error at binaryop" ) 
+            func = lookup(node.op , symtab) 
+            return func(a,b) 
 
         case ast.IfThen():
             if (interpret(node.condition)):
@@ -35,12 +38,8 @@ def interpret(node: ast.Expression, symtab=None) -> Value:
         case ast.UnaryOp():
 
             c: Any = interpret(node.expr, symtab) 
-            if node.op == '-':
-                return -c
-            elif node.op == 'not':
-                return not c 
-            else:
-                raise Exception("Unknown error at unaryop") 
+            func = lookup(node.name, symtab) 
+            return func(c) 
 
         case ast.Function():
            arg_vals = []
@@ -50,11 +49,8 @@ def interpret(node: ast.Expression, symtab=None) -> Value:
                 val = interpret(expr, symtab) 
                 arg_vals.append(val) 
 
-            if node.name == "print":
-                print(*arg_vals)
-                return None 
-            else:
-                raise Exception("Unknown error at Function" ) 
+            func = lookup(node.name, symtab)
+            return func(*arg_vals) 
 
         case ast.VarDecl():
             name = node.name 
