@@ -5,7 +5,7 @@ from compiler.parser import parse
 def test_parser_test1()-> None :
     tokens = tokenize("1 + 2")
     parse_output =parse(tokens) 
-
+    print("parse_output : " , parse_output)
     assert parse_output == ast.BinaryOp(left=ast.Literal(value=1) , op='+', right=ast.Literal(value=2))
 
 
