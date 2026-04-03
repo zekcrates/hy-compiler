@@ -61,8 +61,7 @@ class Block(Expression):
 
 @dataclass
 class VarDecl(Expression):
-    name: str 
+    name: str  
+    value : Expression  
     var_type: str | None = None 
-    value : Expression | None = None 
-
     location : SourceLocation | None = None 

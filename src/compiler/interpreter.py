@@ -1,13 +1,14 @@
-from typing import Any,Callable 
+from __future__ import annotations
+from typing import Any,Callable
 from compiler import ast 
-
-Value = int | bool | None | Callable 
+from typing import Optional  , Any, cast
+Value = int | bool | None | Callable[..., Any]
 
 
 class SymTab:
-    def __init__(self, parent=None):
+    def __init__(self, parent:Optional[SymTab]=None):
         self.locals: dict[str, Value] = {}  
-        self.parent: SymTab | None = parent
+        self.parent: Optional[SymTab] = parent
 
 def new_table()-> SymTab:
     top = SymTab()
@@ -17,6 +18,8 @@ def new_table()-> SymTab:
     top.locals['/'] = lambda a, b: a // b
     top.locals['<'] = lambda a, b: a < b
     top.locals['>'] = lambda a, b: a > b
+    top.locals['<='] = lambda a, b : a<= b 
+    top.locals['>='] =lambda a,b : a>= b 
     top.locals['=='] = lambda a, b: a == b
     top.locals['!='] = lambda a, b: a != b
     top.locals['unary_not'] = lambda a: not a
@@ -25,14 +28,18 @@ def new_table()-> SymTab:
     top.locals['print_bool'] = lambda a: print(a) 
     return top 
 
-def interpret(node: ast.Expression, symtab=None) -> Value:
+def interpret(node: ast.Expression, symtab:SymTab| None=None) -> Value:
+    if symtab is None:
+        symtab = new_table()
     match node: 
         case ast.Literal() :
             return  node.value 
         
         case ast.BinaryOp():
             if node.op == '=':
-                value = interpret(node.right, symtab) 
+                value = interpret(node.right, symtab)
+                if not isinstance(node.left, ast.Identifier):
+                    raise Exception("Assignment target must be an identifier")
                 symtab.locals[node.left.name] = value 
 
                 return value
@@ -47,9 +54,12 @@ def interpret(node: ast.Expression, symtab=None) -> Value:
             else:
 
                 a:Any =  interpret(node.left, symtab) 
-                b: Any = interpret(node.right), symtab )  
-                func = lookup(node.op , symtab) 
-                return func(a,b) 
+                b: Any = interpret(node.right, symtab )  
+                func = lookup(node.op , symtab)
+                if not callable(func):
+                     raise Exception(f"{node.op} is not callable")
+                return cast(Callable[..., Any], func)(a, b)
+ 
 
         case ast.IfThen():
             if (interpret(node.condition)):
@@ -60,8 +70,11 @@ def interpret(node: ast.Expression, symtab=None) -> Value:
         case ast.UnaryOp():
 
             c: Any = interpret(node.expr, symtab) 
-            func = lookup('unary_' + node.op, symtab) 
-            return func(c) 
+            func = lookup('unary_' + node.op, symtab)
+            if not callable(func):
+                raise Exception(f"unary_{node.op} is not callable")
+            return cast(Callable[..., Any], func)(c)
+             
 
         case ast.Function():
            arg_vals = []
@@ -72,12 +85,14 @@ def interpret(node: ast.Expression, symtab=None) -> Value:
                 arg_vals.append(val) 
 
             func = lookup(node.name, symtab)
-            return func(*arg_vals) 
+            if not callable(func):
+                raise Exception(f"{node.name} is not callable")
+            return cast(Callable[..., Any], func)(*arg_vals)
 
         case ast.VarDecl():
             name = node.name 
             value = interpret(node.value, symtab) 
-            SymTab.locals[name] = value 
+            symtab.locals[name] = value 
             return value 
 
         case ast.Block():

@@ -30,13 +30,22 @@ def parse(tokens: list[Token]) -> ast.Expression :
         return token 
 
     def parse_assignment() ->ast.Expression:
+        # one way 
+        # var a  = 1 
+        #another way 
+        # var a : Int =  1 
+
         if peek().text == "var" : 
             var_token = consume("var") 
             name = consume().text 
+            var_typ = None 
+            if peek().text == ":":
+                consume(":") 
+                var_typ = consume() 
             consume("=") 
             value = parse_assignment()
 
-            return ast.VarDecl(name=name, var_type=None, value=value, location=var_token.loc)
+            return ast.VarDecl(name=name, var_type=var_typ.text if var_typ is not None else None, value=value, location=var_token.loc)
 
         left = parse_or() 
         if peek().text == "=":
