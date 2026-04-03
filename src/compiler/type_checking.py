@@ -1,9 +1,6 @@
 import compiler.ast as ast 
+from compiler.types import Int, Type, Bool, FunctionType, Unit 
 
-Int = int 
-Bool = bool 
-Unit = None 
-Type = Int | Bool | Unit 
 
 
 class SymTab:
@@ -22,8 +19,8 @@ def new_table() -> SymTab:
         top.locals['>'] = Bool 
         top.locals['<='] = Bool 
         top.locals['>='] = Bool 
-        top.locals['print_int'] = Int 
-        top.locals['print_bool'] = Bool 
+        top.locals['print_int'] = FunctionType(Int, Unit)  
+        top.locals['print_bool'] = FunctionType(Bool, Unit) 
         return top 
 def typecheck(node: ast.Expr, symtab: SymTab) -> Type:
     match node: 
