@@ -11,11 +11,18 @@ class SymTab:
 
 def new_table()-> SymTab:
     top = SymTab()
-    top.locals("+") = lambda a,b : a+b 
-    top.locals("-") = lambda a,b: a-b 
-    top.locals("<") = lambda a, b: a< b 
-    top.locals("print_int") = lambda a: print(a) 
-    
+    top.locals['+'] = lambda a, b: a + b
+    top.locals['-'] = lambda a, b: a - b
+    top.locals['*'] = lambda a, b: a * b
+    top.locals['/'] = lambda a, b: a // b
+    top.locals['<'] = lambda a, b: a < b
+    top.locals['>'] = lambda a, b: a > b
+    top.locals['=='] = lambda a, b: a == b
+    top.locals['!='] = lambda a, b: a != b
+    top.locals['unary_not'] = lambda a: not a
+    top.locals['unary_-'] = lambda a: -a
+    top.locals['print_int'] = lambda a: print(a)
+    top.locals['print_bool'] = lambda a: print(a) 
     return top 
 
 def interpret(node: ast.Expression, symtab=None) -> Value:
@@ -24,10 +31,25 @@ def interpret(node: ast.Expression, symtab=None) -> Value:
             return  node.value 
         
         case ast.BinaryOp():
-            a:Any =  interpret(node.left, symtab) 
-            b: Any = interpret(node.right), symtab )  
-            func = lookup(node.op , symtab) 
-            return func(a,b) 
+            if node.op == '=':
+                value = interpret(node.right, symtab) 
+                symtab.locals[node.left.name] = value 
+
+                return value
+            elif node.op == "and":
+                return interpret(node.left, symtab) and interpret(node.right , symtab) 
+
+
+            elif node.op == "or":
+                    # dont check the right 
+
+                return interpret(node.left, symtab) or interpret(node.right, symtab) 
+            else:
+
+                a:Any =  interpret(node.left, symtab) 
+                b: Any = interpret(node.right), symtab )  
+                func = lookup(node.op , symtab) 
+                return func(a,b) 
 
         case ast.IfThen():
             if (interpret(node.condition)):
@@ -38,7 +60,7 @@ def interpret(node: ast.Expression, symtab=None) -> Value:
         case ast.UnaryOp():
 
             c: Any = interpret(node.expr, symtab) 
-            func = lookup(node.name, symtab) 
+            func = lookup('unary_' + node.op, symtab) 
             return func(c) 
 
         case ast.Function():
