@@ -102,7 +102,13 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
             return func_type.return_type
         case ast.Identifier():
             return lookup(node.name , symtab) 
-
+    
+        case ast.Block():
+            result = Unit 
+            child = SymTab(parent=symtab) 
+            for ex in node.expressions:
+                result = typecheck(ex, child) 
+            return result 
         case _:
             raise Exception("Unsupported node type")        
 

@@ -73,4 +73,36 @@ def test_identifier_lookup() -> None:
     assert typecheck(ident('x'), symtab) is Int
 
 
+def test_if_then() -> None:
+    node = ast.IfExpr(
+        condition=bool_lit(True),
+        then_branch=int_lit(1),
+        else_branch=int_lit(2)
+    )
+    assert tc(node) is Int
+
+    n = ast.IfExpr(
+        condition=bool_lit(True),
+        then_branch=bool_lit(True),
+        else_branch=bool_lit(False)
+    )
+
+    assert tc(n) is Bool 
+        
+    node = ast.IfExpr(
+        condition=bool_lit(True),
+        then_branch=int_lit(1),
+        else_branch=None
+    )
+
+    result = tc(node)
+    assert result is not None
+
+
+def test_print_int()-> None:
+    node = ast.Function(name='print_int', args=[int_lit(42)])
+    assert tc(node) is Unit
+
+    node = ast.Function(name='print_bool', args=[bool_lit(True)])
+    assert tc(node) is Unit
 
