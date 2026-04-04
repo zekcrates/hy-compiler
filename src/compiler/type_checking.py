@@ -104,9 +104,9 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
             return lookup(node.name , symtab) 
     
         case ast.Block():
-            result = Unit 
+            result:Type = Unit 
             child = SymTab(parent=symtab) 
-            for ex in node.expressions:
+            for ex in node.statements:
                 result = typecheck(ex, child) 
             return result 
         case _:
