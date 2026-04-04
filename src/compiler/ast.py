@@ -1,4 +1,6 @@
 from dataclasses import dataclass 
+from compiler.types import IntType, BoolType, UnitType
+
 from compiler.tokenizer import SourceLocation
 @dataclass 
 class Expression:
@@ -63,5 +65,5 @@ class Block(Expression):
 class VarDecl(Expression):
     name: str  
     value : Expression  
-    var_type: str | None = None 
+    var_type:  IntType | BoolType | UnitType |  None = None 
     location : SourceLocation | None = None 

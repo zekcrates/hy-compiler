@@ -1,6 +1,6 @@
 from compiler.tokenizer import Token 
 import compiler.ast as ast 
-
+from compiler.types import Int, Bool, Unit, IntType, BoolType, UnitType
 
 operators = ['+', '-', '%', '==','!=', '<', '<=', '>', '>=', 'and' , 'or' ,'-', 'not'  ]
 
@@ -38,14 +38,23 @@ def parse(tokens: list[Token]) -> ast.Expression :
         if peek().text == "var" : 
             var_token = consume("var") 
             name = consume().text 
-            var_typ = None 
+            var_typ = None
+            parsed_type: IntType | BoolType | UnitType | None = None
+
             if peek().text == ":":
                 consume(":") 
-                var_typ = consume() 
+                var_typ = consume()
+
+                type_map: dict[str, IntType | BoolType | UnitType] = {
+                        "Int": Int,
+                        "Bool": Bool,
+                         "Unit": Unit
+                }
+                parsed_type = type_map.get(var_typ.text)
             consume("=") 
             value = parse_assignment()
 
-            return ast.VarDecl(name=name, var_type=var_typ.text if var_typ is not None else None, value=value, location=var_token.loc)
+            return ast.VarDecl(name=name, var_type=parsed_type, value=value, location=var_token.loc)
 
         left = parse_or() 
         if peek().text == "=":
