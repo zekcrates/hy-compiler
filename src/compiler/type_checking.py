@@ -45,12 +45,15 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
 
         case ast.UnaryOp():
             t = typecheck(node.expr, symtab) 
-            out = lookup('unary_' + node.op, symtab) 
-            if t != out:
-                raise Exception("Types dont match") 
-            return Bool
+            op_type = lookup('unary_' + node.op, symtab) 
+            if not isinstance(op_type, FunctionType) :
+                raise Exception("Type is not functiontype") 
 
-        case ast.IfThen():
+            if [t] != op_type.param_types:
+                raise Exception("Types dont match") 
+            return op_type.return_type
+
+        case ast.IfExpr():
             cond = typecheck(node.condition, symtab) 
             if cond is not Bool:
                 raise Exception("Wrong type for bool") 
@@ -64,10 +67,10 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
             return then 
         
         case ast.Literal():
-            if isinstance(node.value , int) :
-                return Int 
-            elif isinstance(node.value, bool) :
+            if isinstance(node.value , bool) :
                 return Bool 
+            elif isinstance(node.value, int) :
+                return Int
             else:
                 raise Exception("Type other than int/bool") 
 
@@ -75,7 +78,7 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
         case ast.VarDecl():
             name = node.name 
             val = typecheck(node.value, symtab) 
-            if node.var_type != val :
+            if node.var_type is not None and  node.var_type != val :
                 raise Exception("Types dont match") 
 
             symtab.locals[name] = val 
