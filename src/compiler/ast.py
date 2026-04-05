@@ -1,11 +1,11 @@
-from dataclasses import dataclass 
-from compiler.types import IntType, BoolType, UnitType
+from dataclasses import dataclass, field 
+from compiler.types import IntType, BoolType, UnitType, Type, Unit
 
 from compiler.tokenizer import SourceLocation
 @dataclass 
 class Expression:
      """Base class for AST nodes representing expressions."""
-
+     type: Type = field(kw_only=True, default=Unit) 
 @dataclass
 class Literal(Expression):
     value: int| bool | None 

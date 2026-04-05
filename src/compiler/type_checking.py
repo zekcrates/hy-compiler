@@ -10,7 +10,10 @@ class SymTab:
     def __init__(self, parent: Optional[SymTab] = None) -> None:
         self.locals: dict[str, Type] = {}
         self.parent: Optional[SymTab] = parent
-
+def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
+    result = _typecheck_inner(node, symtab)
+    node.type = result   
+    return result
 def new_table() -> SymTab:
         top = SymTab()
         top.locals['+'] = FunctionType([Int,Int],Int)
@@ -26,7 +29,7 @@ def new_table() -> SymTab:
         top.locals['print_int'] = FunctionType([Int], Unit)
         top.locals['print_bool']= FunctionType([Bool], Unit)
         return top 
-def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
+def _typecheck_inner(node: ast.Expression, symtab: SymTab) -> Type:
     match node: 
         case ast.BinaryOp():
             t1 = typecheck(node.left, symtab)
@@ -70,6 +73,7 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
             if isinstance(node.value , bool) :
                 return Bool 
             elif isinstance(node.value, int) :
+                
                 return Int
             else:
                 raise Exception("Type other than int/bool") 
