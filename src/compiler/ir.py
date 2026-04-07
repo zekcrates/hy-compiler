@@ -1,5 +1,10 @@
 from dataclasses import dataclass
-
+from compiler.tokenizer import SourceLocation 
+from typing import Any
+import dataclasses
+@dataclass(frozen=True)
+class Location(SourceLocation):
+    pass
 
 @dataclass(frozen=True) 
 class IRVar:
