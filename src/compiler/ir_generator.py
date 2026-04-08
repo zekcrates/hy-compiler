@@ -93,8 +93,25 @@ def generate_ir(
 
             case ast.VarDecl():
                 output = visit(st, expr.value) 
-                st.add_local(name, IRVar(output))
                 var = new_var()
+                instr = ir.Copy(loc, output, var) 
+                ins.append(instr) 
+                st.add_local(expr.name , var) 
+                return var 
+
+            case ast.Function():
+                arg_vals   = []
+                if expr.args is not None:
+                    for arg in expr.args :
+
+                        output = visit(st, arg) 
+                        arg_vals.append(output) 
+                var = new_var()
+                fun_var = st.require(expr.name) 
+
+                instr = ir.Call(loc, fun_var, [output], var) 
+                ins.append(instr) 
+                return var 
 
 
     root_symtab = SymTab[IRVar](parent=None)

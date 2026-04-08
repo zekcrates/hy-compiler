@@ -47,7 +47,7 @@ def tokenize(source_code: str ) -> list[Token]:
         token_type = None 
         if token.isdigit():
             token_type = "int_literal" 
-        elif token.isalpha() or token.startswith("_") :
+        elif ident_re.fullmatch(token) :
             token_type = "identifier" 
         else:
             token_type = "other" 
