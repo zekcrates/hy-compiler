@@ -109,7 +109,7 @@ def generate_ir(
                 var = new_var()
                 fun_var = st.require(expr.name) 
 
-                instr = ir.Call(loc, fun_var, [output], var) 
+                instr = ir.Call(loc, fun_var, arg_vals, var) 
                 ins.append(instr) 
                 return var 
 
@@ -119,4 +119,11 @@ def generate_ir(
         root_symtab.add_local(name, IRVar(name))
 
     var_final_result = visit(root_symtab, root_expr)
+
+    if root_expr.type == Int:
+        func = root_symtab.require("print_int") 
+        var = new_var()
+        instr = ir.Call(loc, func, [var_final_result] , var) 
+        ins.append(instr) 
+
     return ins
