@@ -45,16 +45,55 @@ def get_all_ir_variables(instructions: list[ir.Instruction]) -> list[ir.IRVar]:
                         add(v) 
     return result_list 
 
-def generate_assembly(instructions: list[ir.Instruction]) -> str:
-    lines = []
+def generate_assembly(instructions: list[ir.Instruction]) -> list[str]:
+    lines: list[str] = []
     def emit(line: str) -> None: lines.append(line)
 
     locals = Locals(
         variables=get_all_ir_variables(instructions)
     )
 
-
+    emit("pushq  %rbp")
+    emit("movq   %rsp, %rbp")
+    emit("subq   ${local._stack_used}, %rsp ")
     for insn in instructions:
         emit('# ' + str(insn)) 
 
+        
+        match insn:
+            case ir.Label():
+                emit("")
+                emit(f".L{insn.name}") 
+
+            case ir.LoadIntConst():
+                if -2**31 <= insn.value <= 2**31:
+                    emit(f"movq {insn.value} , {locals.get_ref(insn.dest)}")
             
+
+            case ir.LoadBoolConst():
+                if insn.value == True:
+                    emit(f"movq 1 , {locals.get_ref(insn.dest)}") 
+                else:
+                    emit(f"movq 0 , {locals.get_ref(insn.dest)}") 
+            
+            case ir.Copy():
+                emit(f"movq {locals.get_ref(insn.source)}, %rax") 
+                emit(f"movq %rax , {locals.get_ref(insn.dest)} " ) 
+
+        
+            case ir.Jump():
+                pass
+            case ir.Call():
+                emit("xor %rax, %rax") 
+                emit(f"mov1 {local.get_ref(insn. ")
+            case ir.CondJump():
+                emit(f"cmpq $0 , {locals.get_ref(insn.cond)} ") 
+                emit(f"jne.{locals.get_ref(insn.then_label}")
+                emit(f"jmp.{locals.get_ref(insn.else_label}")
+
+
+        
+        emit("movq %rbp, %rsp")
+        emit("popq %rbp")
+        emit("ret")
+    return lines 

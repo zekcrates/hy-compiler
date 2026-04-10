@@ -109,7 +109,11 @@ def parse(tokens: list[Token]) -> ast.Expression :
             
             raise Exception(f'{peek().loc}: expected an identifier')
         token = consume()
-
+        
+        if token.text == "True":
+            return ast.Literal(True, location=token.loc) 
+        elif token.text == "False":
+            return ast.Literal(False, location=token.loc) 
         # checking for function 
         if peek().text == "(":
             return parse_function(token) 

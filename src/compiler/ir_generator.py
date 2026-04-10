@@ -43,7 +43,14 @@ def generate_ir(
         nonlocal counter 
         name = f"v{counter}"
         counter +=1 
-        return IRVar(name) 
+        return IRVar(name)
+
+    label_counter = 0
+    def new_label(loc, prefix="L") -> ir.Label:
+        nonlocal label_counter
+        name = f"{prefix}{label_counter}"
+        label_counter += 1
+        return ir.Label(loc, name)
     ins: list[ir.Instruction] = []
 
     def visit(st: SymTab[IRVar], expr: ast.Expression) -> IRVar:
@@ -112,7 +119,32 @@ def generate_ir(
                 instr = ir.Call(loc, fun_var, arg_vals, var) 
                 ins.append(instr) 
                 return var 
+            
+            case ast.IfExpr():
+                cond_var = visit(st, expr.condition) 
+                then_label = new_label(loc, "then") 
+                else_label = new_label(loc, "else") 
+                end_label = new_label(loc, "if_end") 
+                result_var = new_var() 
 
+                instr = ir.CondJump(loc, cond_var, then_label, else_label) 
+
+                ins.append(instr) 
+
+                #then 
+                ins.append(then_label) 
+                then_val = visit(st, expr.then_branch) 
+                ins.append(ir.Copy(loc, then_val , result_var)) 
+                ins.append(ir.Jump(loc, end_label)) 
+
+                #else 
+                ins.append(else_label) 
+                else_val = visit(st,expr.else_branch) 
+                ins.append(ir.Copy(loc, else_val , result_var)) 
+                ins.append(ir.Jump(loc, end_label)) 
+
+                ins.append(end_label) 
+                return result_var
 
     root_symtab = SymTab[IRVar](parent=None)
     for name in reserved_names:
@@ -125,5 +157,12 @@ def generate_ir(
         var = new_var()
         instr = ir.Call(loc, func, [var_final_result] , var) 
         ins.append(instr) 
+    
+    elif root_expr.type == Bool:
+        fucn = root_symtab.require("print_bool") 
+        var = new_var() 
+        instr = ir.Call(loc, func, [var_final_result] , var) 
+        ins.append(instr) 
+
 
     return ins
