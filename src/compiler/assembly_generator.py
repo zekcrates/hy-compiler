@@ -82,14 +82,22 @@ def generate_assembly(instructions: list[ir.Instruction]) -> list[str]:
 
         
             case ir.Jump():
-                pass
+                emit(f"jmp {insn.label.name}")
             case ir.Call():
-                emit("xor %rax, %rax") 
-                emit(f"mov1 {local.get_ref(insn. ")
+                args = insn.args 
+                arg_regs = ["%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"]
+                
+                for i, arg in enumerate(args):
+                    if i >= len(arg_regs):
+                        raise Exception("Too many arguments (max 6 supported)")
+                    emit(f"movq {locals.get_ref(arg)}, {arg_regs[i]}")
+
+                emit(f"call {insn.fn.name}")
+                emit(f"movq %rax, {locals.get_ref(insn.dest)}")
             case ir.CondJump():
                 emit(f"cmpq $0 , {locals.get_ref(insn.cond)} ") 
-                emit(f"jne.{locals.get_ref(insn.then_label}")
-                emit(f"jmp.{locals.get_ref(insn.else_label}")
+                emit(f"jne {locals.get_ref(insn.then_label}")
+                emit(f"jmp {locals.get_ref(insn.else_label}")
 
 
         
